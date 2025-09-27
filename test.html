@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Date Difference</title>
+  <script src="https://unpkg.com/dayjs/dayjs.min.js"></script>
+  <script src="https://unpkg.com/dayjs/plugin/duration.js"></script>
+  <script>
+    dayjs.extend(dayjs_plugin_duration);
+
+    // Returns an object with fields + human readable text
+    function computeDiffObject(from, to) {
+      const a = dayjs(from);
+      const b = dayjs(to);
+
+      if(!a.isValid() || !b.isValid()){
+        return { error: 'invalid date', from: String(from), to: String(to) };
+      }
+
+      let start = a, end = b;
+      if (a.isAfter(b)) { start = b; end = a; }
+
+      const years = end.diff(start, 'year');
+      const afterYears = start.add(years, 'year');
+
+      const months = end.diff(afterYears, 'month');
+      const afterMonths = afterYears.add(months, 'month');
+
+      const days = end.diff(afterMonths, 'day');
+      const afterDays = afterMonths.add(days, 'day');
+
+      const hours = end.diff(afterDays, 'hour');
+      const afterHours = afterDays.add(hours, 'hour');
+
+      const minutes = end.diff(afterHours, 'minute');
+      const afterMinutes = afterHours.add(minutes, 'minute');
+
+      const seconds = end.diff(afterMinutes, 'second');
+
+      const totalMilliseconds = end.diff(start);
+      const totalSeconds = Math.floor(totalMilliseconds / 1000);
+      const totalDays = Math.floor(totalSeconds / (24 * 3600));
+
+      const text = `${years} years ${months} months ${days} days ${hours} hours ${minutes} minutes ${seconds} seconds`;
+
+      return {
+        text,
+        years, months, days, hours, minutes, seconds,
+        totalDays, totalSeconds, totalMilliseconds,
+        from: start.toISOString(),
+        to: end.toISOString()
+      };
+    }
+
+    // Compute and send JSON string back to hosting app (Tunkable)
+    function computeDiffAndSend(from, to) {
+      const res = computeDiffObject(from, to);
+      const payload = JSON.stringify(res);
+
+      // Preferred way for React Native WebView (Tunkable)
+      if (window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage === 'function') {
+        window.ReactNativeWebView.postMessage(payload);
+      } else if (window.parent && typeof window.parent.postMessage === 'function') {
+        // fallback for some webviews
+        window.parent.postMessage(payload, '*');
+      } else {
+        // last-resort: log to console (useful for browser testing)
+        console.log('computeDiffAndSend ->', payload);
+      }
+      return payload;
+    }
+
+    // Convenience: expose functions to global scope
+    window.computeDiffObject = computeDiffObject;
+    window.computeDiffAndSend = computeDiffAndSend;
+  </script>
+</head>
+<body>
+  <h3>Date Difference Ready</h3>
+  <p>Use computeDiffAndSend(fromString, toString) from your app.</p>
+</body>
+</html>
