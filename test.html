@@ -79,4 +79,12 @@
   <h3>Date Difference Ready</h3>
   <p>Use computeDiffAndSend(fromString, toString) from your app.</p>
 </body>
+<script>
+  document.addEventListener("message", function(event) {
+    let data = JSON.parse(event.data);   // ველოდებით JSON ტექსტს
+    if (data.current && data.target) {
+      computeDiffAndSend(data.current, data.target); // შენი ფუნქცია უკვე ითვლის
+    }
+  });
+</script>
 </html>
