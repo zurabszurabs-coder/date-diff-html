@@ -8,6 +8,7 @@
   <script>
     dayjs.extend(dayjs_plugin_duration);
 
+    // ფუნქცია სხვადასხვა თარიღების გამოთვლისთვის
     function computeDiffObject(from, to) {
       const a = dayjs(from);
       const b = dayjs(to);
@@ -21,19 +22,14 @@
 
       const years = end.diff(start, 'year');
       const afterYears = start.add(years, 'year');
-
       const months = end.diff(afterYears, 'month');
       const afterMonths = afterYears.add(months, 'month');
-
       const days = end.diff(afterMonths, 'day');
       const afterDays = afterMonths.add(days, 'day');
-
       const hours = end.diff(afterDays, 'hour');
       const afterHours = afterDays.add(hours, 'hour');
-
       const minutes = end.diff(afterHours, 'minute');
       const afterMinutes = afterHours.add(minutes, 'minute');
-
       const seconds = end.diff(afterMinutes, 'second');
 
       const totalMilliseconds = end.diff(start);
@@ -51,39 +47,37 @@
       };
     }
 
-    function computeDiffAndSend(from, to) {
+    // ფუნქცია, რომელიც Web Viewer-ს აგზავნის JSON-ს
+    window.computeDiffAndSend = function(from, to) {
       const res = computeDiffObject(from, to);
       const payload = JSON.stringify(res);
 
+      // WebView (Tunkable) დამუშავება
       if (window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage === 'function') {
         window.ReactNativeWebView.postMessage(payload);
-      } else if (window.parent && typeof window.parent.postMessage === 'function') {
-        window.parent.postMessage(payload, '*');
       } else {
-        console.log('computeDiffAndSend ->', payload);
+        // მხოლოდ კონსოლისთვის ტესტი
+        console.log(payload);
       }
       return payload;
-    }
+    };
 
-    window.computeDiffObject = computeDiffObject;
-    window.computeDiffAndSend = computeDiffAndSend;
+    // მიიღეთ მესიჯი Web Viewer–დან
+    window.addEventListener("message", function(event) {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.current && data.target) {
+          window.computeDiffAndSend(data.current, data.target);
+        }
+      } catch(e) {
+        console.error("Invalid message received:", event.data);
+      }
+    });
   </script>
 </head>
 <body>
   <h3>Date Difference Ready</h3>
-  <p>Send: "2025-09-28|2026-01-01"</p>
+  <p>გამოძახებისთვის გამოიყენეთ: <br>
+  <code>window.computeDiffAndSend("2025-01-01", "2026-01-01")</code></p>
 </body>
-<script>
-  document.addEventListener("message", function(event) {
-    let msg = event.data.trim();  // "2025-09-28|2026-01-01
-    let parts = msg.split("|");
-
-    if (parts.length === 2) {
-      let current = parts[0];
-      let target = parts[1];
-      computeDiffAndSend(current, target);
-    }
-  });
-</script>
 </html>
-
