@@ -8,7 +8,6 @@
   <script>
     dayjs.extend(dayjs_plugin_duration);
 
-    // Returns an object with fields + human readable text
     function computeDiffObject(from, to) {
       const a = dayjs(from);
       const b = dayjs(to);
@@ -52,39 +51,39 @@
       };
     }
 
-    // Compute and send JSON string back to hosting app (Tunkable)
     function computeDiffAndSend(from, to) {
       const res = computeDiffObject(from, to);
       const payload = JSON.stringify(res);
 
-      // Preferred way for React Native WebView (Tunkable)
       if (window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage === 'function') {
         window.ReactNativeWebView.postMessage(payload);
       } else if (window.parent && typeof window.parent.postMessage === 'function') {
-        // fallback for some webviews
         window.parent.postMessage(payload, '*');
       } else {
-        // last-resort: log to console (useful for browser testing)
         console.log('computeDiffAndSend ->', payload);
       }
       return payload;
     }
 
-    // Convenience: expose functions to global scope
     window.computeDiffObject = computeDiffObject;
     window.computeDiffAndSend = computeDiffAndSend;
   </script>
 </head>
 <body>
   <h3>Date Difference Ready</h3>
-  <p>Use computeDiffAndSend(fromString, toString) from your app.</p>
+  <p>Send: "2025-09-28|2026-01-01"</p>
 </body>
 <script>
   document.addEventListener("message", function(event) {
-    let data = JSON.parse(event.data);   // ველოდებით JSON ტექსტს
-    if (data.current && data.target) {
-      computeDiffAndSend(data.current, data.target); // შენი ფუნქცია უკვე ითვლის
+    let msg = event.data.trim();  // "2025-09-28|2026-01-01
+    let parts = msg.split("|");
+
+    if (parts.length === 2) {
+      let current = parts[0];
+      let target = parts[1];
+      computeDiffAndSend(current, target);
     }
   });
 </script>
 </html>
+
