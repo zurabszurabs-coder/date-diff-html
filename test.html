@@ -74,4 +74,14 @@ json
   "minutes": 35,
   "seconds": 32
 }
+<script>
+  // parseSmsDate ფუნქციის განახლებული ვერსია
+  function parseSmsDate(smsDate) {
+    const parts = smsDate.split(/[-:]/); // [dd, mm, yyyy, HH, MM, SS]
+    const pad = (n) => n.length === 1 ? '0' + n : n;
+    return dayjs(`${parts[2]}-${pad(parts[1])}-${pad(parts[0])}T${pad(parts[3])}:${pad(parts[4])}:${pad(parts[5])}`);
+  }
+
+  // დანარჩენი კოდი უცვლელი რჩება
+</script>
 
