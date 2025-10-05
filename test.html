@@ -1,83 +1,77 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8"/>
-  <title>Date Difference</title>
-  <script src="https://unpkg.com/dayjs/dayjs.min.js"></script>
-  <script src="https://unpkg.com/dayjs/plugin/duration.js"></script>
-  <script>
-    dayjs.extend(dayjs_plugin_duration);
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/duration.js"></script>
+<script>
+dayjs.extend(dayjs_plugin_duration);
 
-    // ფუნქცია სხვადასხვა თარიღების გამოთვლისთვის
-    function computeDiffObject(from, to) {
-      const a = dayjs(from);
-      const b = dayjs(to);
+// ფუნქცია SMS სტრიქონიდან თარიღის გადაქცევისთვის
+function parseSmsDate(smsDate) {
+  // ფორმატი: "dd-mm-yyyy:HH:MM:SS"
+  const parts = smsDate.split(/[-:]/); // [dd, mm, yyyy, HH, MM, SS]
+  return dayjs(`${parts[2]}-${parts[1]}-${parts[0]}T${parts[3]}:${parts[4]}:${parts[5]}`);
+}
 
-      if(!a.isValid() || !b.isValid()){
-        return { error: 'invalid date', from: String(from), to: String(to) };
-      }
+// ძირითადი სხვაობის ფუნქცია
+function computeDiffObject(fromSms, toSms) {
+  const start = parseSmsDate(fromSms);
+  const end = parseSmsDate(toSms);
 
-      let start = a, end = b;
-      if (a.isAfter(b)) { start = b; end = a; }
+  const years = end.diff(start, 'year');
+  const afterYears = start.add(years, 'year');
+  const months = end.diff(afterYears, 'month');
+  const afterMonths = afterYears.add(months, 'month');
+  const days = end.diff(afterMonths, 'day');
+  const afterDays = afterMonths.add(days, 'day');
+  const hours = end.diff(afterDays, 'hour');
+  const afterHours = afterDays.add(hours, 'hour');
+  const minutes = end.diff(afterHours, 'minute');
+  const afterMinutes = afterHours.add(minutes, 'minute');
+  const seconds = end.diff(afterMinutes, 'second');
 
-      const years = end.diff(start, 'year');
-      const afterYears = start.add(years, 'year');
-      const months = end.diff(afterYears, 'month');
-      const afterMonths = afterYears.add(months, 'month');
-      const days = end.diff(afterMonths, 'day');
-      const afterDays = afterMonths.add(days, 'day');
-      const hours = end.diff(afterDays, 'hour');
-      const afterHours = afterDays.add(hours, 'hour');
-      const minutes = end.diff(afterHours, 'minute');
-      const afterMinutes = afterHours.add(minutes, 'minute');
-      const seconds = end.diff(afterMinutes, 'second');
+  return {
+    years: years,
+    months: months,
+    days: days,
+    hours: hours,
+    minutes: minutes,
+    seconds: seconds
+  };
+}
 
-      const totalMilliseconds = end.diff(start);
-      const totalSeconds = Math.floor(totalMilliseconds / 1000);
-      const totalDays = Math.floor(totalSeconds / (24 * 3600));
+// WebView ან Console გამოსაყენებლად
+function computeDiffAndSend(fromSms, toSms) {
+  const res = computeDiffObject(fromSms, toSms);
+  const payload = JSON.stringify(res);
 
-      const text = `${years} years ${months} months ${days} days ${hours} hours ${minutes} minutes ${seconds} seconds`;
+  if (window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage === 'function') {
+    window.ReactNativeWebView.postMessage(payload);
+  } else if (window.parent && typeof window.parent.postMessage === 'function') {
+    window.parent.postMessage(payload, '*');
+  } else {
+    console.log(payload); // ბრაუზერის ტესტისთვის
+  }
 
-      return {
-        text,
-        years, months, days, hours, minutes, seconds,
-        totalDays, totalSeconds, totalMilliseconds,
-        from: start.toISOString(),
-        to: end.toISOString()
-      };
-    }
+  return payload;
+}
 
-    // ფუნქცია, რომელიც Web Viewer-ს აგზავნის JSON-ს
-    window.computeDiffAndSend = function(from, to) {
-      const res = computeDiffObject(from, to);
-      const payload = JSON.stringify(res);
+// გასატესტად
+console.log(computeDiffAndSend("5-10-2025:12:54:28", "29-10-2025:11:30:0"));
+</script>
+🔹 რას აკეთებს კოდი
+parseSmsDate() – გარდაქმნის სმს სტრიქონს Day.js ობიექტად
 
-      // WebView (Tunkable) დამუშავება
-      if (window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage === 'function') {
-        window.ReactNativeWebView.postMessage(payload);
-      } else {
-        // მხოლოდ კონსოლისთვის ტესტი
-        console.log(payload);
-      }
-      return payload;
-    };
+computeDiffObject() – ითვლის სხვაობას year, month, day, hour, minute, second
 
-    // მიიღეთ მესიჯი Web Viewer–დან
-    window.addEventListener("message", function(event) {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.current && data.target) {
-          window.computeDiffAndSend(data.current, data.target);
-        }
-      } catch(e) {
-        console.error("Invalid message received:", event.data);
-      }
-    });
-  </script>
-</head>
-<body>
-  <h3>Date Difference Ready</h3>
-  <p>გამოძახებისთვის გამოიყენეთ: <br>
-  <code>window.computeDiffAndSend("2025-01-01", "2026-01-01")</code></p>
-</body>
-</html>
+computeDiffAndSend() – გამოგიგზავნის JSON შედეგს WebView-ში ან Console-ში
+
+🔹 ტესტის შედეგი ამ მონაცემებით:
+json
+კოდის კოპირება
+{
+  "years": 0,
+  "months": 0,
+  "days": 23,
+  "hours": 22,
+  "minutes": 35,
+  "seconds": 32
+}
+
