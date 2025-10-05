@@ -2,17 +2,19 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Console Test</title>
+  <title>Tunkable Test</title>
   <script>
-    // ფუნქცია, რომელიც Console-ში პასუხობს
-    function sendHello() {
-      console.log("hi");
-    }
+    // Event Listener მესიჯების მოსმენისთვის
+    window.addEventListener("message", function(event) {
+      if(event.data === "hello"){
+        // პასუხი Tunkable Web Viewer-სთვის
+        window.ReactNativeWebView.postMessage("hi");
+      }
+    });
   </script>
 </head>
 <body>
-  <h3>Console Test</h3>
-  <button onclick="sendHello()">Click me</button>
-  <p>Open Console (F12) and click the button to see "hi"</p>
+  <h3>Tunkable Connection Test</h3>
+  <p>This page waits for a message from Tunkable Web Viewer.</p>
 </body>
 </html>
