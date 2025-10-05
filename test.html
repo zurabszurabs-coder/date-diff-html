@@ -5,8 +5,8 @@ dayjs.extend(dayjs_plugin_duration);
 
 // parseSmsDate – SMS სტრიქონიდან Day.js ობიექტზე გადაყვანა
 function parseSmsDate(smsDate) {
-  const parts = smsDate.split(/[-:]/); // [dd, mm, yyyy, HH, MM, SS]
-  const pad = (n) => String(n || '0').padStart(2,'0');
+  const parts = smsDate.split(/[-:]/);
+  const pad = (n) => String(n).padStart(2,'0');
 
   const day   = pad(parts[0]);
   const month = pad(parts[1]);
@@ -54,6 +54,6 @@ function computeDiffAndSend(fromSms, toSms) {
   return payload;
 }
 
-// ტესტი
-console.log(computeDiffAndSend("5-10-2025:12:54:28", "29-10-2025:11:30:0"));
+// ტესტი – ყველა ნაწილი ორი ციფრია
+console.log(computeDiffAndSend("05-10-2025:12:54:28", "29-10-2025:11:30:00"));
 </script>
