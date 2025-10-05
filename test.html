@@ -1,78 +1,18 @@
-
 <!DOCTYPE html>
-<html lang="ka">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>Date Diff Test</title>
-  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/duration.js"></script>
+  <title>Tunkable Connection Test</title>
   <script>
-    dayjs.extend(dayjs_plugin_duration);
-
-    // SMS სტრიქონის გადაყვანა Day.js ობიექტზე
-    function parseSmsDate(smsDate) {
-      const regex = /^(\d{1,2})-(\d{1,2})-(\d{4}):(\d{1,2}):(\d{1,2}):(\d{1,2})$/;
-      const match = smsDate.match(regex);
-      if (!match) return dayjs.invalid();
-
-      let [_, d, m, y, h, mi, s] = match;
-
-      // ყველა ნაწილი ორ ნიშნად
-      d  = d.padStart(2, '0');
-      m  = m.padStart(2, '0');
-      h  = h.padStart(2, '0');
-      mi = mi.padStart(2, '0');
-      s  = s.padStart(2, '0');
-
-      return dayjs(`${y}-${m}-${d}T${h}:${mi}:${s}`);
-    }
-
-    // სხვაობის დათვლა
-    function computeDiffObject(fromSms, toSms) {
-      const start = parseSmsDate(fromSms);
-      const end = parseSmsDate(toSms);
-
-      if (!start.isValid() || !end.isValid()) {
-        return { error: "invalid date", from: fromSms, to: toSms };
-      }
-
-      const years = end.diff(start, 'year');
-      const afterYears = start.add(years, 'year');
-      const months = end.diff(afterYears, 'month');
-      const afterMonths = afterYears.add(months, 'month');
-      const days = end.diff(afterMonths, 'day');
-      const afterDays = afterMonths.add(days, 'day');
-      const hours = end.diff(afterDays, 'hour');
-      const afterHours = afterDays.add(hours, 'hour');
-      const minutes = end.diff(afterHours, 'minute');
-      const afterMinutes = afterHours.add(minutes, 'minute');
-      const seconds = end.diff(afterMinutes, 'second');
-
-      return { years, months, days, hours, minutes, seconds };
-    }
-
-    // JSON-ს Console/WebView-ში აგზავნის
-    function computeDiffAndSend(fromSms, toSms) {
-      const res = computeDiffObject(fromSms, toSms);
-      const payload = JSON.stringify(res);
-
-      if (window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage === 'function') {
-        window.ReactNativeWebView.postMessage(payload);
-      } else if (window.parent && typeof window.parent.postMessage === 'function') {
-        window.parent.postMessage(payload, '*');
-      } else {
-        console.log(payload);
-      }
-
-      return payload;
-    }
-
-    // ტესტი – აუცილებლად ორ ნიშნად ყველა ნაწილი
-    console.log(computeDiffAndSend("05-10-2025:12:54:28", "29-10-2025:11:30:00"));
+    window.addEventListener("message", function(event) {
+      let msg = event.data;
+      let reply = "HTML received: " + msg;
+      window.parent.postMessage(reply, "*");
+    });
   </script>
 </head>
 <body>
-  <h3>Date Difference Ready</h3>
-  <p>სმს ფორმატი: <code>dd-mm-yyyy:HH:MM:SS</code> (ერთი ან ორი ციფრი)</p>
+  <h3>Connection Test Page</h3>
+  <p>Waiting for message...</p>
 </body>
 </html>
