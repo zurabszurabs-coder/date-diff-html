@@ -2,17 +2,20 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Tunkable Connection Test</title>
+  <title>Simple Console Test</title>
   <script>
+    // მესიჯების მოსმენა
     window.addEventListener("message", function(event) {
-      let msg = event.data;
-      let reply = "HTML received: " + msg;
-      window.parent.postMessage(reply, "*");
+      if(event.data === "hello"){
+        console.log("hi");  // Console-ში პასუხი
+      } else {
+        console.log("Unknown message:", event.data);
+      }
     });
   </script>
 </head>
 <body>
-  <h3>Connection Test Page</h3>
-  <p>Waiting for message...</p>
+  <h3>Open Console and test</h3>
+  <p>In the console, run: window.postMessage("hello", "*")</p>
 </body>
 </html>
