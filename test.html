@@ -8,24 +8,20 @@
   <script>
     dayjs.extend(dayjs_plugin_duration);
 
-    // parseSmsDate – SMS სტრიქონიდან Day.js ობიექტზე გადაყვანა
+    // სმს თარიღის გადაყვანა Day.js-ში
     function parseSmsDate(smsDate) {
-      const parts = smsDate.split(/[-:]/); // [dd, mm, yyyy, HH, MM, SS]
-      if(parts.length !== 6) return dayjs.invalid();
+      // regex ერთი ან ორი ციფრისთვის
+      const regex = /(\d{1,2})-(\d{1,2})-(\d{4}):(\d{1,2}):(\d{1,2}):(\d{1,2})/;
+      const match = smsDate.match(regex);
+      if (!match) return dayjs.invalid();
 
+      const [_, d, m, y, h, mi, s] = match;
       const pad = n => String(n).padStart(2,'0');
 
-      const day   = pad(parts[0]);
-      const month = pad(parts[1]);
-      const year  = parts[2];
-      const hour  = pad(parts[3]);
-      const min   = pad(parts[4]);
-      const sec   = pad(parts[5]);
-
-      return dayjs(`${year}-${month}-${day}T${hour}:${min}:${sec}`);
+      return dayjs(`${y}-${pad(m)}-${pad(d)}T${pad(h)}:${pad(mi)}:${pad(s)}`);
     }
 
-    // computeDiffObject – ითვლის სხვაობას
+    // სხვაობის დათვლა
     function computeDiffObject(fromSms, toSms) {
       const start = parseSmsDate(fromSms);
       const end = parseSmsDate(toSms);
@@ -49,12 +45,11 @@
       return { years, months, days, hours, minutes, seconds };
     }
 
-    // computeDiffAndSend – JSON-ს Console/WebView-ში აგზავნის
+    // JSON–ის გაგზავნა WebView-ში ან Console-ში
     function computeDiffAndSend(fromSms, toSms) {
       const res = computeDiffObject(fromSms, toSms);
       const payload = JSON.stringify(res);
 
-      // WebView მხარდაჭერა
       if (window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage === 'function') {
         window.ReactNativeWebView.postMessage(payload);
       } else if (window.parent && typeof window.parent.postMessage === 'function') {
@@ -66,7 +61,7 @@
       return payload;
     }
 
-    // ტესტის მაგალითი
+    // ტესტი
     console.log(computeDiffAndSend("5-10-2025:12:54:28", "29-10-2025:11:30:00"));
   </script>
 </head>
