@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ka">
 <head>
@@ -8,17 +9,22 @@
   <script>
     dayjs.extend(dayjs_plugin_duration);
 
-    // სმს თარიღის გადაყვანა Day.js-ში
+    // SMS სტრიქონის გადაყვანა Day.js ობიექტზე
     function parseSmsDate(smsDate) {
-      // regex ერთი ან ორი ციფრისთვის
-      const regex = /(\d{1,2})-(\d{1,2})-(\d{4}):(\d{1,2}):(\d{1,2}):(\d{1,2})/;
+      const regex = /^(\d{1,2})-(\d{1,2})-(\d{4}):(\d{1,2}):(\d{1,2}):(\d{1,2})$/;
       const match = smsDate.match(regex);
       if (!match) return dayjs.invalid();
 
-      const [_, d, m, y, h, mi, s] = match;
-      const pad = n => String(n).padStart(2,'0');
+      let [_, d, m, y, h, mi, s] = match;
 
-      return dayjs(`${y}-${pad(m)}-${pad(d)}T${pad(h)}:${pad(mi)}:${pad(s)}`);
+      // ყველა ნაწილი ორ ნიშნად
+      d  = d.padStart(2, '0');
+      m  = m.padStart(2, '0');
+      h  = h.padStart(2, '0');
+      mi = mi.padStart(2, '0');
+      s  = s.padStart(2, '0');
+
+      return dayjs(`${y}-${m}-${d}T${h}:${mi}:${s}`);
     }
 
     // სხვაობის დათვლა
@@ -45,7 +51,7 @@
       return { years, months, days, hours, minutes, seconds };
     }
 
-    // JSON–ის გაგზავნა WebView-ში ან Console-ში
+    // JSON-ს Console/WebView-ში აგზავნის
     function computeDiffAndSend(fromSms, toSms) {
       const res = computeDiffObject(fromSms, toSms);
       const payload = JSON.stringify(res);
@@ -55,14 +61,14 @@
       } else if (window.parent && typeof window.parent.postMessage === 'function') {
         window.parent.postMessage(payload, '*');
       } else {
-        console.log(payload); // ბრაუზერის ტესტისთვის
+        console.log(payload);
       }
 
       return payload;
     }
 
-    // ტესტი
-    console.log(computeDiffAndSend("5-10-2025:12:54:28", "29-10-2025:11:30:00"));
+    // ტესტი – აუცილებლად ორ ნიშნად ყველა ნაწილი
+    console.log(computeDiffAndSend("05-10-2025:12:54:28", "29-10-2025:11:30:00"));
   </script>
 </head>
 <body>
