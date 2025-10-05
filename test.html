@@ -2,20 +2,17 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Simple Console Test</title>
+  <title>Console Test</title>
   <script>
-    // მესიჯების მოსმენა
-    window.addEventListener("message", function(event) {
-      if(event.data === "hello"){
-        console.log("hi");  // Console-ში პასუხი
-      } else {
-        console.log("Unknown message:", event.data);
-      }
-    });
+    // ფუნქცია, რომელიც კონსოლში პასუხობს
+    function sendHello() {
+      console.log("hi");
+    }
   </script>
 </head>
 <body>
-  <h3>Open Console and test</h3>
-  <p>In the console, run: window.postMessage("hello", "*")</p>
+  <h3>Console Test</h3>
+  <button onclick="sendHello()">Send hello</button>
+  <p>Open console (F12) and click the button</p>
 </body>
 </html>
