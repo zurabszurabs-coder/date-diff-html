@@ -5,17 +5,15 @@ dayjs.extend(dayjs_plugin_duration);
 
 // parseSmsDate – SMS სტრიქონიდან Day.js ობიექტზე გადაყვანა
 function parseSmsDate(smsDate) {
-  const parts = smsDate.split(/[-:]/);
-  const pad = (n) => String(n).padStart(2,'0');
+  const regex = /(\d{1,2})-(\d{1,2})-(\d{4}):(\d{1,2}):(\d{1,2}):(\d{1,2})/;
+  const match = smsDate.match(regex);
+  if (!match) return dayjs.invalid();
 
-  const day   = pad(parts[0]);
-  const month = pad(parts[1]);
-  const year  = parts[2];
-  const hour  = pad(parts[3]);
-  const min   = pad(parts[4]);
-  const sec   = pad(parts[5]);
+  const [_, d, m, y, h, mi, s] = match;
 
-  return dayjs(`${year}-${month}-${day}T${hour}:${min}:${sec}`);
+  const pad = n => String(n).padStart(2,'0');
+
+  return dayjs(`${y}-${pad(m)}-${pad(d)}T${pad(h)}:${pad(mi)}:${pad(s)}`);
 }
 
 // computeDiffObject – ითვლის სხვაობას
@@ -54,6 +52,6 @@ function computeDiffAndSend(fromSms, toSms) {
   return payload;
 }
 
-// ტესტი – ყველა ნაწილი ორი ციფრია
-console.log(computeDiffAndSend("05-10-2025:12:54:28", "29-10-2025:11:30:00"));
+// ტესტი – ნებისმიერი ფორმატის SMS
+console.log(computeDiffAndSend("5-10-2025:12:54:28", "29-10-2025:11:30:0"));
 </script>
