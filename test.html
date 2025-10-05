@@ -4,15 +4,18 @@
   <meta charset="UTF-8">
   <title>Console Test</title>
   <script>
-    // ფუნქცია, რომელიც კონსოლში პასუხობს
-    function sendHello() {
-      console.log("hi");
-    }
+    // Event Listener მესიჯების მოსმენისთვის
+    window.addEventListener("message", function(event) {
+      if(event.data === "hello"){
+        console.log("hi"); // Console-ში გამოჩნდება
+      } else {
+        console.log("Unknown message:", event.data);
+      }
+    });
   </script>
 </head>
 <body>
   <h3>Console Test</h3>
-  <button onclick="sendHello()">Send hello</button>
-  <p>Open console (F12) and click the button</p>
+  <p>Open Console (F12) and run: <code>window.postMessage("hello", "*")</code></p>
 </body>
 </html>
