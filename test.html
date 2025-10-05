@@ -3,14 +3,14 @@
 <script>
 dayjs.extend(dayjs_plugin_duration);
 
-// ფუნქცია SMS სტრიქონიდან თარიღის გადაქცევისთვის
+// parseSmsDate ფუნქციის განახლებული ვერსია
 function parseSmsDate(smsDate) {
-  // ფორმატი: "dd-mm-yyyy:HH:MM:SS"
-  const parts = smsDate.split(/[-:]/); // [dd, mm, yyyy, HH, MM, SS]
-  return dayjs(`${parts[2]}-${parts[1]}-${parts[0]}T${parts[3]}:${parts[4]}:${parts[5]}`);
+  const parts = smsDate.split(/[-:]/);
+  const pad = (n) => n.length === 1 ? '0' + n : n;
+  return dayjs(`${parts[2]}-${pad(parts[1])}-${pad(parts[0])}T${pad(parts[3])}:${pad(parts[4])}:${pad(parts[5])}`);
 }
 
-// ძირითადი სხვაობის ფუნქცია
+// computeDiffObject – ითვლის სხვაობას
 function computeDiffObject(fromSms, toSms) {
   const start = parseSmsDate(fromSms);
   const end = parseSmsDate(toSms);
@@ -27,17 +27,10 @@ function computeDiffObject(fromSms, toSms) {
   const afterMinutes = afterHours.add(minutes, 'minute');
   const seconds = end.diff(afterMinutes, 'second');
 
-  return {
-    years: years,
-    months: months,
-    days: days,
-    hours: hours,
-    minutes: minutes,
-    seconds: seconds
-  };
+  return { years, months, days, hours, minutes, seconds };
 }
 
-// WebView ან Console გამოსაყენებლად
+// computeDiffAndSend – JSON-ს Console/WebView-ში აგზავნის
 function computeDiffAndSend(fromSms, toSms) {
   const res = computeDiffObject(fromSms, toSms);
   const payload = JSON.stringify(res);
@@ -47,41 +40,12 @@ function computeDiffAndSend(fromSms, toSms) {
   } else if (window.parent && typeof window.parent.postMessage === 'function') {
     window.parent.postMessage(payload, '*');
   } else {
-    console.log(payload); // ბრაუზერის ტესტისთვის
+    console.log(payload);
   }
 
   return payload;
 }
 
-// გასატესტად
+// ტესტი
 console.log(computeDiffAndSend("5-10-2025:12:54:28", "29-10-2025:11:30:0"));
 </script>
-🔹 რას აკეთებს კოდი
-parseSmsDate() – გარდაქმნის სმს სტრიქონს Day.js ობიექტად
-
-computeDiffObject() – ითვლის სხვაობას year, month, day, hour, minute, second
-
-computeDiffAndSend() – გამოგიგზავნის JSON შედეგს WebView-ში ან Console-ში
-
-🔹 ტესტის შედეგი ამ მონაცემებით:
-json
-კოდის კოპირება
-{
-  "years": 0,
-  "months": 0,
-  "days": 23,
-  "hours": 22,
-  "minutes": 35,
-  "seconds": 32
-}
-<script>
-  // parseSmsDate ფუნქციის განახლებული ვერსია
-  function parseSmsDate(smsDate) {
-    const parts = smsDate.split(/[-:]/); // [dd, mm, yyyy, HH, MM, SS]
-    const pad = (n) => n.length === 1 ? '0' + n : n;
-    return dayjs(`${parts[2]}-${pad(parts[1])}-${pad(parts[0])}T${pad(parts[3])}:${pad(parts[4])}:${pad(parts[5])}`);
-  }
-
-  // დანარჩენი კოდი უცვლელი რჩება
-</script>
-
